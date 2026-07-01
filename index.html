@@ -19,61 +19,68 @@
     padding: 24px 16px 60px;
   }
   .wrap { max-width: 480px; margin: 0 auto; }
-  .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
   .date { font-size: 13px; color: #9A9890; }
   .title { font-size: 22px; font-weight: 600; margin-top: 2px; }
-  .count { font-size: 24px; font-weight: 600; text-align: right; }
-  .count-label { font-size: 12px; color: #9A9890; text-align: right; }
-  .bar-track { height: 6px; background: #2A2B2D; border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
-  .bar-fill { height: 100%; width: 0%; background: #E8734A; transition: width .25s; }
-  .item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 8px; border-radius: 10px;
-    border-bottom: 1px solid #2A2B2D;
+  .undo-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: #222325; border: 1px solid #343537; border-radius: 10px;
+    color: #C9C7BF; font-size: 13px; font-family: inherit;
+    padding: 8px 12px; cursor: pointer; flex-shrink: 0;
   }
-  .item:active { background: #222325; }
+  .undo-btn svg { width: 16px; height: 16px; }
+  .undo-btn:disabled { opacity: 0.35; cursor: default; }
+  .undo-btn:not(:disabled):active { background: #2A2B2D; }
+  .item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 4px; border-bottom: 1px solid #2A2B2D;
+  }
   .checkbox {
-    width: 22px; height: 22px; flex-shrink: 0;
-    border: 1.5px solid #5A5850; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; flex-shrink: 0;
+    border: 1.5px solid #5A5850; border-radius: 7px;
     cursor: pointer;
   }
-  .checkbox.checked { background: #E8734A; border-color: #E8734A; }
-  .checkbox svg { display: none; width: 14px; height: 14px; }
-  .checkbox.checked svg { display: block; }
+  .checkbox:active { background: #2A2B2D; }
   .item-text {
     flex: 1; font-size: 15px; line-height: 1.4;
-    background: transparent; border: none; color: #F2F1EC;
-    font-family: inherit; padding: 0; outline: none;
+    color: #F2F1EC; word-break: break-all;
   }
-  .item-text.done { color: #6E6C64; text-decoration: line-through; }
-  .del-btn {
-    width: 28px; height: 28px; flex-shrink: 0;
-    background: none; border: none; color: #6E6C64;
+  .edit-input {
+    flex: 1; height: 38px; padding: 0 12px;
+    background: #222325; border: 1px solid #E8734A; border-radius: 9px;
+    color: #F2F1EC; font-size: 15px; font-family: inherit; outline: none;
+  }
+  .icon-btn {
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: none; border: none; padding: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; cursor: pointer;
+    cursor: pointer; border-radius: 8px;
   }
-  .add-row { display: flex; gap: 8px; margin-top: 16px; }
+  .icon-btn svg { width: 19px; height: 19px; }
+  .icon-btn.edit { color: #8B8981; }
+  .icon-btn.edit:active { background: #222325; }
+  .icon-btn.save { color: #E8734A; }
+  .icon-btn.cancel { color: #8B8981; }
+  .add-row { display: flex; gap: 8px; margin-top: 18px; }
   .add-input {
-    flex: 1; height: 44px; padding: 0 14px;
-    background: #222325; border: 1px solid #343537; border-radius: 10px;
+    flex: 1; height: 46px; padding: 0 14px;
+    background: #222325; border: 1px solid #343537; border-radius: 11px;
     color: #F2F1EC; font-size: 15px; font-family: inherit; outline: none;
   }
   .add-input::placeholder { color: #6E6C64; }
   .add-btn {
-    width: 44px; height: 44px; flex-shrink: 0;
-    background: #E8734A; border: none; border-radius: 10px;
-    color: #17181A; font-size: 22px; font-weight: 600; cursor: pointer;
+    width: 46px; height: 46px; flex-shrink: 0;
+    background: #E8734A; border: none; border-radius: 11px;
+    color: #17181A; font-size: 24px; font-weight: 600; cursor: pointer;
   }
+  .add-btn:active { background: #d1633d; }
   .footer {
     margin-top: 28px; padding-top: 16px;
     border-top: 1px solid #2A2B2D;
-    font-size: 12px; color: #6E6C64; line-height: 1.5;
+    font-size: 12px; color: #6E6C64; line-height: 1.6;
   }
-  .empty { text-align: center; color: #6E6C64; font-size: 14px; padding: 30px 0; }
-  .status {
-    font-size: 12px; margin-top: 6px; min-height: 16px;
-  }
+  .empty { text-align: center; color: #6E6C64; font-size: 14px; padding: 34px 0; }
+  .status { font-size: 12px; margin-top: 10px; min-height: 16px; }
   .status.sync { color: #6E6C64; }
   .status.err { color: #E8734A; }
   .banner {
@@ -81,6 +88,30 @@
     padding: 14px; margin-bottom: 20px; font-size: 13px; line-height: 1.6;
     color: #F0C4B4; display: none;
   }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px; z-index: 100;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #212225; border: 1px solid #343537; border-radius: 16px;
+    padding: 24px 22px 18px; width: 100%; max-width: 340px;
+  }
+  .modal-q { font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+  .modal-item {
+    font-size: 14px; color: #9A9890; margin: 0 0 22px;
+    word-break: break-all; line-height: 1.5;
+  }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button {
+    flex: 1; height: 46px; border: none; border-radius: 11px;
+    font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer;
+  }
+  .btn-cancel { background: #343537; color: #E8E6DF; }
+  .btn-cancel:active { background: #3E3F41; }
+  .btn-confirm { background: #E8734A; color: #17181A; }
+  .btn-confirm:active { background: #d1633d; }
 </style>
 </head>
 <body>
@@ -94,13 +125,11 @@
       <div class="date" id="date-label"></div>
       <div class="title">오늘의 체크리스트</div>
     </div>
-    <div>
-      <div class="count" id="count">0/0</div>
-      <div class="count-label">완료</div>
-    </div>
+    <button class="undo-btn" id="undo-btn" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+      되돌리기
+    </button>
   </div>
-
-  <div class="bar-track"><div class="bar-fill" id="bar"></div></div>
 
   <div id="list"></div>
 
@@ -112,7 +141,18 @@
   <div class="status sync" id="status"></div>
 
   <div class="footer">
-    항목 글자를 누르면 수정할 수 있어. 체크 상태는 매일 자정에 초기화되고, 모든 기기에서 실시간으로 같이 보여.
+    체크박스를 누르면 완료된 항목을 삭제할지 물어봐. 연필 버튼으로 내용을 수정할 수 있고, 실수했으면 되돌리기 버튼으로 복구돼. 모든 기기에서 실시간으로 같이 보여.
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <p class="modal-q">이 항목을 삭제할까요?</p>
+    <p class="modal-item" id="modal-item"></p>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="modal-cancel">취소</button>
+      <button class="btn-confirm" id="modal-confirm">삭제</button>
+    </div>
   </div>
 </div>
 
@@ -131,20 +171,24 @@ const firebaseConfig = {
 };
 
 const DEFAULT_ITEMS = [
-  {id:'d1', text:'오늘 할 일 정하기', done:false},
-  {id:'d2', text:'운동 30분', done:false},
-  {id:'d3', text:'스킨케어 루틴', done:false}
+  {id:'d1', text:'오늘 할 일 정하기'},
+  {id:'d2', text:'운동 30분'},
+  {id:'d3', text:'스킨케어 루틴'}
 ];
 
 const $ = id => document.getElementById(id);
-const today = () => new Date().toISOString().slice(0,10);
 
 $('date-label').textContent =
   new Date().toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'long'});
 
-let state = { date: today(), items: [] };
+let state = { items: [] };
 let editingId = null;
-let ready = false;
+let undoStack = [];
+let pendingDeleteId = null;
+
+const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+const ICON_SAVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const ICON_CANCEL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
 function setStatus(text, isErr){
   const el = $('status');
@@ -183,19 +227,11 @@ function startFirebase(){
 
     onSnapshot(docRef, async snap => {
       if(!snap.exists()){
-        await setDoc(docRef, { date: today(), items: DEFAULT_ITEMS });
+        await setDoc(docRef, { items: DEFAULT_ITEMS });
         return;
       }
       const data = snap.data();
-      if(data.date !== today()){
-        await setDoc(docRef, {
-          date: today(),
-          items: (data.items || []).map(i => ({ ...i, done: false }))
-        });
-        return;
-      }
-      state = { date: data.date, items: data.items || [] };
-      ready = true;
+      state = { items: (data.items || []).map(i => ({ id: i.id, text: i.text })) };
       setStatus('동기화됨');
       if(!editingId) render();
     }, err => {
@@ -205,7 +241,7 @@ function startFirebase(){
 
   window.__save = async () => {
     try {
-      await setDoc(docRef, state);
+      await setDoc(docRef, { items: state.items });
     } catch(e){
       setStatus('저장 실패: ' + e.message, true);
     }
@@ -213,8 +249,24 @@ function startFirebase(){
 }
 
 function renderLocal(){
-  state = { date: today(), items: DEFAULT_ITEMS.map(i => ({...i})) };
+  state = { items: DEFAULT_ITEMS.map(i => ({...i})) };
   window.__save = async () => {};
+  render();
+}
+
+function mutate(fn){
+  undoStack.push(JSON.stringify(state.items));
+  if(undoStack.length > 50) undoStack.shift();
+  fn();
+  window.__save();
+  render();
+}
+
+function undo(){
+  if(!undoStack.length) return;
+  state.items = JSON.parse(undoStack.pop());
+  editingId = null;
+  window.__save();
   render();
 }
 
@@ -229,65 +281,107 @@ function render(){
     root.appendChild(empty);
   }
 
-  let done = 0;
   state.items.forEach(item => {
-    if(item.done) done++;
     const row = document.createElement('div');
     row.className = 'item';
 
-    const cb = document.createElement('div');
-    cb.className = 'checkbox' + (item.done ? ' checked' : '');
-    cb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#17181A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-    cb.onclick = () => { item.done = !item.done; window.__save(); render(); };
-    row.appendChild(cb);
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'item-text' + (item.done ? ' done' : '');
-    input.value = item.text;
-    input.readOnly = editingId !== item.id;
-    input.onclick = () => {
-      if(editingId !== item.id){ editingId = item.id; render(); }
-    };
-    input.onblur = () => {
-      const v = input.value.trim();
-      item.text = v || item.text;
-      editingId = null;
-      window.__save();
-      render();
-    };
-    input.onkeydown = e => { if(e.key === 'Enter') input.blur(); };
-    row.appendChild(input);
-
-    const del = document.createElement('button');
-    del.className = 'del-btn';
-    del.innerHTML = '&#10005;';
-    del.onclick = () => {
-      state.items = state.items.filter(i => i.id !== item.id);
-      window.__save();
-      render();
-    };
-    row.appendChild(del);
-
-    root.appendChild(row);
-
     if(editingId === item.id){
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'edit-input';
+      input.value = item.text;
+
+      const commit = () => {
+        const v = input.value.trim();
+        if(v && v !== item.text){
+          mutate(() => { item.text = v; editingId = null; });
+        } else {
+          editingId = null;
+          render();
+        }
+      };
+      const cancel = () => { editingId = null; render(); };
+
+      input.onkeydown = e => {
+        if(e.key === 'Enter') commit();
+        if(e.key === 'Escape') cancel();
+      };
+      row.appendChild(input);
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'icon-btn save';
+      saveBtn.innerHTML = ICON_SAVE;
+      saveBtn.setAttribute('aria-label', '저장');
+      saveBtn.onclick = commit;
+      row.appendChild(saveBtn);
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'icon-btn cancel';
+      cancelBtn.innerHTML = ICON_CANCEL;
+      cancelBtn.setAttribute('aria-label', '취소');
+      cancelBtn.onclick = cancel;
+      row.appendChild(cancelBtn);
+
+      root.appendChild(row);
       setTimeout(() => { input.focus(); input.select(); }, 0);
+    } else {
+      const cb = document.createElement('div');
+      cb.className = 'checkbox';
+      cb.setAttribute('role', 'button');
+      cb.setAttribute('aria-label', '완료 및 삭제');
+      cb.onclick = () => openDeleteModal(item.id);
+      row.appendChild(cb);
+
+      const text = document.createElement('span');
+      text.className = 'item-text';
+      text.textContent = item.text;
+      row.appendChild(text);
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'icon-btn edit';
+      editBtn.innerHTML = ICON_EDIT;
+      editBtn.setAttribute('aria-label', '수정');
+      editBtn.onclick = () => { editingId = item.id; render(); };
+      row.appendChild(editBtn);
+
+      root.appendChild(row);
     }
   });
 
-  $('count').textContent = done + '/' + state.items.length;
-  $('bar').style.width = (state.items.length ? (done/state.items.length*100) : 0) + '%';
+  $('undo-btn').disabled = undoStack.length === 0;
 }
+
+function openDeleteModal(id){
+  const item = state.items.find(i => i.id === id);
+  if(!item) return;
+  pendingDeleteId = id;
+  $('modal-item').textContent = '"' + item.text + '"';
+  $('modal').classList.add('show');
+}
+
+function closeModal(){
+  pendingDeleteId = null;
+  $('modal').classList.remove('show');
+}
+
+$('modal-cancel').onclick = closeModal;
+$('modal-confirm').onclick = () => {
+  if(pendingDeleteId){
+    const id = pendingDeleteId;
+    mutate(() => { state.items = state.items.filter(i => i.id !== id); });
+  }
+  closeModal();
+};
+$('modal').onclick = e => { if(e.target === $('modal')) closeModal(); };
+
+$('undo-btn').onclick = undo;
 
 function addItem(){
   const inp = $('new-input');
   const v = inp.value.trim();
   if(!v) return;
-  state.items.push({ id: 'item_' + Date.now(), text: v, done: false });
+  mutate(() => { state.items.push({ id: 'item_' + Date.now(), text: v }); });
   inp.value = '';
-  window.__save();
-  render();
 }
 $('add-btn').onclick = addItem;
 $('new-input').onkeydown = e => { if(e.key === 'Enter') addItem(); };
