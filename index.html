@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>오늘의 체크리스트</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: #17181A;
+    color: #F2F1EC;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .date { font-size: 13px; color: #9A9890; }
+  .title { font-size: 22px; font-weight: 600; margin-top: 2px; }
+  .count { font-size: 24px; font-weight: 600; text-align: right; }
+  .count-label { font-size: 12px; color: #9A9890; text-align: right; }
+  .bar-track { height: 6px; background: #2A2B2D; border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+  .bar-fill { height: 100%; width: 0%; background: #E8734A; transition: width .25s; }
+  .item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 8px; border-radius: 10px;
+    border-bottom: 1px solid #2A2B2D;
+  }
+  .item:active { background: #222325; }
+  .checkbox {
+    width: 22px; height: 22px; flex-shrink: 0;
+    border: 1.5px solid #5A5850; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .checkbox.checked { background: #E8734A; border-color: #E8734A; }
+  .checkbox svg { display: none; width: 14px; height: 14px; }
+  .checkbox.checked svg { display: block; }
+  .item-text {
+    flex: 1; font-size: 15px; line-height: 1.4;
+    background: transparent; border: none; color: #F2F1EC;
+    font-family: inherit; padding: 0; outline: none;
+  }
+  .item-text.done { color: #6E6C64; text-decoration: line-through; }
+  .del-btn {
+    width: 28px; height: 28px; flex-shrink: 0;
+    background: none; border: none; color: #6E6C64;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; cursor: pointer;
+  }
+  .add-row { display: flex; gap: 8px; margin-top: 16px; }
+  .add-input {
+    flex: 1; height: 44px; padding: 0 14px;
+    background: #222325; border: 1px solid #343537; border-radius: 10px;
+    color: #F2F1EC; font-size: 15px; font-family: inherit; outline: none;
+  }
+  .add-input::placeholder { color: #6E6C64; }
+  .add-btn {
+    width: 44px; height: 44px; flex-shrink: 0;
+    background: #E8734A; border: none; border-radius: 10px;
+    color: #17181A; font-size: 22px; font-weight: 600; cursor: pointer;
+  }
+  .footer {
+    margin-top: 28px; padding-top: 16px;
+    border-top: 1px solid #2A2B2D;
+    font-size: 12px; color: #6E6C64; line-height: 1.5;
+  }
+  .empty { text-align: center; color: #6E6C64; font-size: 14px; padding: 30px 0; }
+  .status {
+    font-size: 12px; margin-top: 6px; min-height: 16px;
+  }
+  .status.sync { color: #6E6C64; }
+  .status.err { color: #E8734A; }
+  .banner {
+    background: #3A1E18; border: 1px solid #6E3A2A; border-radius: 10px;
+    padding: 14px; margin-bottom: 20px; font-size: 13px; line-height: 1.6;
+    color: #F0C4B4; display: none;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner" id="config-banner">
+    Firebase 설정이 아직 안 됐어. 아래 <b>&lt;script&gt;</b> 안의 <b>firebaseConfig</b> 값을 네 프로젝트 걸로 채워야 동기화가 작동해.
+  </div>
+
+  <div class="top">
+    <div>
+      <div class="date" id="date-label"></div>
+      <div class="title">오늘의 체크리스트</div>
+    </div>
+    <div>
+      <div class="count" id="count">0/0</div>
+      <div class="count-label">완료</div>
+    </div>
+  </div>
+
+  <div class="bar-track"><div class="bar-fill" id="bar"></div></div>
+
+  <div id="list"></div>
+
+  <div class="add-row">
+    <input type="text" class="add-input" id="new-input" placeholder="항목 추가">
+    <button class="add-btn" id="add-btn">+</button>
+  </div>
+
+  <div class="status sync" id="status"></div>
+
+  <div class="footer">
+    항목 글자를 누르면 수정할 수 있어. 체크 상태는 매일 자정에 초기화되고, 모든 기기에서 실시간으로 같이 보여.
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+/* ▼▼▼ 여기를 네 Firebase 프로젝트 설정으로 채워 ▼▼▼ */
+const firebaseConfig = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+/* ▲▲▲ 서로서로 프로젝트 config 그대로 붙여넣어도 됨 ▲▲▲ */
+
+const DEFAULT_ITEMS = [
+  {id:'d1', text:'오늘 할 일 정하기', done:false},
+  {id:'d2', text:'운동 30분', done:false},
+  {id:'d3', text:'스킨케어 루틴', done:false}
+];
+
+const $ = id => document.getElementById(id);
+const today = () => new Date().toISOString().slice(0,10);
+
+$('date-label').textContent =
+  new Date().toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'long'});
+
+let state = { date: today(), items: [] };
+let editingId = null;
+let ready = false;
+
+function setStatus(text, isErr){
+  const el = $('status');
+  el.textContent = text;
+  el.className = 'status ' + (isErr ? 'err' : 'sync');
+}
+
+if(!firebaseConfig.apiKey || !firebaseConfig.projectId){
+  $('config-banner').style.display = 'block';
+  renderLocal();
+} else {
+  startFirebase();
+}
+
+function startFirebase(){
+  let app, db, auth, docRef;
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    docRef = doc(db, "checklist", "main");
+  } catch(e){
+    setStatus('Firebase 초기화 실패: ' + e.message, true);
+    renderLocal();
+    return;
+  }
+
+  setStatus('연결 중…');
+
+  signInAnonymously(auth).catch(e => {
+    setStatus('로그인 실패: ' + e.message + ' (익명 인증을 켰는지 확인)', true);
+  });
+
+  onAuthStateChanged(auth, user => {
+    if(!user) return;
+
+    onSnapshot(docRef, async snap => {
+      if(!snap.exists()){
+        await setDoc(docRef, { date: today(), items: DEFAULT_ITEMS });
+        return;
+      }
+      const data = snap.data();
+      if(data.date !== today()){
+        await setDoc(docRef, {
+          date: today(),
+          items: (data.items || []).map(i => ({ ...i, done: false }))
+        });
+        return;
+      }
+      state = { date: data.date, items: data.items || [] };
+      ready = true;
+      setStatus('동기화됨');
+      if(!editingId) render();
+    }, err => {
+      setStatus('동기화 오류: ' + err.message, true);
+    });
+  });
+
+  window.__save = async () => {
+    try {
+      await setDoc(docRef, state);
+    } catch(e){
+      setStatus('저장 실패: ' + e.message, true);
+    }
+  };
+}
+
+function renderLocal(){
+  state = { date: today(), items: DEFAULT_ITEMS.map(i => ({...i})) };
+  window.__save = async () => {};
+  render();
+}
+
+function render(){
+  const root = $('list');
+  root.innerHTML = '';
+
+  if(state.items.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = '항목이 없어. 아래에서 추가해봐.';
+    root.appendChild(empty);
+  }
+
+  let done = 0;
+  state.items.forEach(item => {
+    if(item.done) done++;
+    const row = document.createElement('div');
+    row.className = 'item';
+
+    const cb = document.createElement('div');
+    cb.className = 'checkbox' + (item.done ? ' checked' : '');
+    cb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#17181A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    cb.onclick = () => { item.done = !item.done; window.__save(); render(); };
+    row.appendChild(cb);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'item-text' + (item.done ? ' done' : '');
+    input.value = item.text;
+    input.readOnly = editingId !== item.id;
+    input.onclick = () => {
+      if(editingId !== item.id){ editingId = item.id; render(); }
+    };
+    input.onblur = () => {
+      const v = input.value.trim();
+      item.text = v || item.text;
+      editingId = null;
+      window.__save();
+      render();
+    };
+    input.onkeydown = e => { if(e.key === 'Enter') input.blur(); };
+    row.appendChild(input);
+
+    const del = document.createElement('button');
+    del.className = 'del-btn';
+    del.innerHTML = '&#10005;';
+    del.onclick = () => {
+      state.items = state.items.filter(i => i.id !== item.id);
+      window.__save();
+      render();
+    };
+    row.appendChild(del);
+
+    root.appendChild(row);
+
+    if(editingId === item.id){
+      setTimeout(() => { input.focus(); input.select(); }, 0);
+    }
+  });
+
+  $('count').textContent = done + '/' + state.items.length;
+  $('bar').style.width = (state.items.length ? (done/state.items.length*100) : 0) + '%';
+}
+
+function addItem(){
+  const inp = $('new-input');
+  const v = inp.value.trim();
+  if(!v) return;
+  state.items.push({ id: 'item_' + Date.now(), text: v, done: false });
+  inp.value = '';
+  window.__save();
+  render();
+}
+$('add-btn').onclick = addItem;
+$('new-input').onkeydown = e => { if(e.key === 'Enter') addItem(); };
+</script>
+</body>
+</html>
