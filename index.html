@@ -117,16 +117,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-/* ▼▼▼ 여기를 네 Firebase 프로젝트 설정으로 채워 ▼▼▼ */
 const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyA2aUEijSBivYAdZbaXGnnO9rg6d8g-Pvg",
+  authDomain: "check-91de6.firebaseapp.com",
+  projectId: "check-91de6",
+  storageBucket: "check-91de6.firebasestorage.app",
+  messagingSenderId: "400856324106",
+  appId: "1:400856324106:web:ada30a3ebec293a4ae67f3"
 };
-/* ▲▲▲ 서로서로 프로젝트 config 그대로 붙여넣어도 됨 ▲▲▲ */
 
 const DEFAULT_ITEMS = [
   {id:'d1', text:'오늘 할 일 정하기', done:false},
