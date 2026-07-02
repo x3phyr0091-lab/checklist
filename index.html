@@ -35,6 +35,7 @@
     display: flex; align-items: center; gap: 10px;
     padding: 13px 4px; border-bottom: 1px solid #2A2B2D;
   }
+  .item.editing { align-items: flex-start; }
   .checkbox {
     width: 24px; height: 24px; flex-shrink: 0;
     border: 1.5px solid #5A5850; border-radius: 7px;
@@ -43,12 +44,13 @@
   .checkbox:active { background: #2A2B2D; }
   .item-text {
     flex: 1; font-size: 15px; line-height: 1.4;
-    color: #F2F1EC; word-break: break-all;
+    color: #F2F1EC; word-break: break-all; white-space: pre-wrap;
   }
   .edit-input {
-    flex: 1; height: 38px; padding: 0 12px;
+    flex: 1; padding: 8px 12px;
     background: #222325; border: 1px solid #E8734A; border-radius: 9px;
     color: #F2F1EC; font-size: 15px; font-family: inherit; outline: none;
+    resize: none; line-height: 1.4; min-height: 38px; overflow: hidden;
   }
   .icon-btn {
     width: 32px; height: 32px; flex-shrink: 0;
@@ -65,11 +67,12 @@
   .icon-btn.edit:active { background: #222325; }
   .icon-btn.save { color: #E8734A; }
   .icon-btn.cancel { color: #8B8981; }
-  .add-row { display: flex; gap: 8px; margin-top: 18px; }
+  .add-row { display: flex; gap: 8px; margin-top: 18px; align-items: flex-end; }
   .add-input {
-    flex: 1; height: 46px; padding: 0 14px;
+    flex: 1; padding: 12px 14px;
     background: #222325; border: 1px solid #343537; border-radius: 11px;
     color: #F2F1EC; font-size: 15px; font-family: inherit; outline: none;
+    resize: none; line-height: 1.4; min-height: 46px; overflow: hidden;
   }
   .add-input::placeholder { color: #6E6C64; }
   .add-btn {
@@ -101,7 +104,7 @@
   .clear-btn:active { color: #E8734A; }
   .comp-item { display: flex; align-items: center; gap: 10px; padding: 10px 4px; }
   .comp-check { width: 19px; height: 19px; color: #6E7A70; flex-shrink: 0; }
-  .comp-text { flex: 1; font-size: 14px; color: #8B8981; text-decoration: line-through; word-break: break-all; line-height: 1.4; }
+  .comp-text { flex: 1; font-size: 14px; color: #8B8981; text-decoration: line-through; word-break: break-all; line-height: 1.4; white-space: pre-wrap; }
   .comp-time { font-size: 11px; color: #5F5E5A; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .made-by {
     text-align: center; font-size: 11px; color: #4E4D49;
@@ -155,7 +158,7 @@
   <div id="list"></div>
 
   <div class="add-row">
-    <input type="text" class="add-input" id="new-input" placeholder="항목 추가">
+    <textarea class="add-input" id="new-input" rows="1" placeholder="항목 추가"></textarea>
     <button class="add-btn" id="add-btn">+</button>
   </div>
 
@@ -179,7 +182,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -241,6 +244,11 @@ function setStatus(text, isErr){
   el.className = 'status ' + (isErr ? 'err' : 'sync');
 }
 
+function autoResize(ta){
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}
+
 if(!firebaseConfig.apiKey || !firebaseConfig.projectId){
   $('config-banner').style.display = 'block';
   renderLocal();
@@ -252,7 +260,13 @@ function startFirebase(){
   let app, db, auth, docRef;
   try {
     app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    try {
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+      });
+    } catch(cacheErr){
+      db = getFirestore(app);
+    }
     auth = getAuth(app);
     docRef = doc(db, "checklist", "main");
   } catch(e){
@@ -263,28 +277,26 @@ function startFirebase(){
 
   setStatus('연결 중…');
 
-  signInAnonymously(auth).catch(e => {
-    setStatus('로그인 실패: ' + e.message + ' (익명 인증을 켰는지 확인)', true);
+  // 캐시에서 즉시 로드 + 서버 업데이트 반영 (인증과 병렬로 구독 시작)
+  onSnapshot(docRef, async snap => {
+    if(!snap.exists()){
+      if(snap.metadata.fromCache) return;
+      await setDoc(docRef, { items: DEFAULT_ITEMS, completed: [] });
+      return;
+    }
+    const data = snap.data();
+    state = {
+      items: (data.items || []).map(i => ({ id: i.id, text: i.text })),
+      completed: (data.completed || []).map(c => ({ id: c.id, text: c.text, doneAt: c.doneAt }))
+    };
+    setStatus(snap.metadata.fromCache ? '캐시에서 불러옴' : '동기화됨');
+    if(!editingId) render();
+  }, err => {
+    setStatus('동기화 오류: ' + err.message, true);
   });
 
-  onAuthStateChanged(auth, user => {
-    if(!user) return;
-
-    onSnapshot(docRef, async snap => {
-      if(!snap.exists()){
-        await setDoc(docRef, { items: DEFAULT_ITEMS, completed: [] });
-        return;
-      }
-      const data = snap.data();
-      state = {
-        items: (data.items || []).map(i => ({ id: i.id, text: i.text })),
-        completed: (data.completed || []).map(c => ({ id: c.id, text: c.text, doneAt: c.doneAt }))
-      };
-      setStatus('동기화됨');
-      if(!editingId) render();
-    }, err => {
-      setStatus('동기화 오류: ' + err.message, true);
-    });
+  signInAnonymously(auth).catch(e => {
+    setStatus('로그인 실패: ' + e.message + ' (익명 인증을 켰는지 확인)', true);
   });
 
   window.__save = async () => {
@@ -341,9 +353,10 @@ function renderList(){
     row.className = 'item';
 
     if(editingId === item.id){
-      const input = document.createElement('input');
-      input.type = 'text';
+      row.classList.add('editing');
+      const input = document.createElement('textarea');
       input.className = 'edit-input';
+      input.rows = 1;
       input.value = item.text;
 
       const commit = () => {
@@ -356,9 +369,10 @@ function renderList(){
       };
       const cancel = () => { editingId = null; render(); };
       input.onkeydown = e => {
-        if(e.key === 'Enter') commit();
+        if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); commit(); }
         if(e.key === 'Escape') cancel();
       };
+      input.oninput = () => autoResize(input);
       row.appendChild(input);
 
       const saveBtn = document.createElement('button');
@@ -376,7 +390,7 @@ function renderList(){
       row.appendChild(cancelBtn);
 
       root.appendChild(row);
-      setTimeout(() => { input.focus(); input.select(); }, 0);
+      setTimeout(() => { input.focus(); autoResize(input); input.setSelectionRange(input.value.length, input.value.length); }, 0);
     } else {
       const cb = document.createElement('div');
       cb.className = 'checkbox';
@@ -521,9 +535,13 @@ function addItem(){
   if(!v) return;
   mutate(() => { state.items.push({ id: 'item_' + Date.now(), text: v }); });
   inp.value = '';
+  autoResize(inp);
 }
 $('add-btn').onclick = addItem;
-$('new-input').onkeydown = e => { if(e.key === 'Enter') addItem(); };
+$('new-input').onkeydown = e => {
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); addItem(); }
+};
+$('new-input').oninput = () => autoResize($('new-input'));
 </script>
 </body>
 </html>
