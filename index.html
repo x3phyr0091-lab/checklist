@@ -205,6 +205,22 @@ const isTouch = window.matchMedia('(pointer: coarse)').matches
   || ('ontouchstart' in window)
   || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
 
+const LOCAL_KEY = 'checklist_last_state_v1';
+
+function loadLocalSnapshot(){
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed || !Array.isArray(parsed.items)) return null;
+    return parsed;
+  } catch(e){ return null; }
+}
+
+function saveLocalSnapshot(s){
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(s)); } catch(e){}
+}
+
 let state = { items: [], completed: [] };
 let editingId = null;
 let undoStack = [];
@@ -257,6 +273,14 @@ if(!firebaseConfig.apiKey || !firebaseConfig.projectId){
   $('config-banner').style.display = 'block';
   renderLocal();
 } else {
+  // 1) 저장해둔 마지막 상태를 즉시 그려서 체감 속도 확보
+  const snapshot = loadLocalSnapshot();
+  if(snapshot){
+    state = snapshot;
+    setStatus('불러온 기록 표시 중…');
+    render();
+  }
+  // 2) 그 사이 실제 서버와 연결해 최신화
   startFirebase();
 }
 
@@ -299,6 +323,7 @@ function startFirebase(){
         completed: (data.completed || []).map(c => ({ id: c.id, text: c.text, doneAt: c.doneAt }))
       };
       loaded = true;
+      saveLocalSnapshot(state);
       setStatus(snap.metadata.fromCache ? '캐시에서 불러옴' : '동기화됨');
       if(!editingId) render();
     }, err => {
@@ -332,6 +357,7 @@ function mutate(fn){
   undoStack.push(JSON.stringify(state));
   if(undoStack.length > 50) undoStack.shift();
   fn();
+  saveLocalSnapshot(state);
   window.__save();
   render();
 }
@@ -340,6 +366,7 @@ function undo(){
   if(!undoStack.length) return;
   state = JSON.parse(undoStack.pop());
   editingId = null;
+  saveLocalSnapshot(state);
   window.__save();
   render();
 }
