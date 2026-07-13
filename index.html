@@ -36,6 +36,16 @@
     padding: 13px 4px; border-bottom: 1px solid #2A2B2D;
   }
   .item.editing { align-items: flex-start; }
+  .item.dragging { opacity: 0.35; }
+  .item.drag-over-top { box-shadow: inset 0 2px 0 0 #E8734A; }
+  .item.drag-over-bottom { box-shadow: inset 0 -2px 0 0 #E8734A; }
+  .drag-handle {
+    width: 20px; height: 24px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #4E4D49; cursor: grab; touch-action: none;
+  }
+  .drag-handle svg { width: 16px; height: 16px; }
+  .drag-handle:active { cursor: grabbing; color: #8B8981; }
   .checkbox {
     width: 24px; height: 24px; flex-shrink: 0;
     border: 1.5px solid #5A5850; border-radius: 7px;
@@ -67,6 +77,36 @@
   .icon-btn.edit:active { background: #222325; }
   .icon-btn.save { color: #E8734A; }
   .icon-btn.cancel { color: #8B8981; }
+  .icon-btn.due { color: #8B8981; }
+  .icon-btn.due.set { color: #7FA88F; }
+  .icon-btn.due.overdue { color: #E8734A; }
+  .icon-btn.due:active { background: #222325; }
+  .item-main { flex: 1; min-width: 0; }
+  .due-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; color: #7FA88F; margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .due-badge.overdue { color: #E8734A; }
+  .due-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .due-form {
+    display: flex; flex-direction: column; gap: 10px; margin: 4px 0 2px;
+  }
+  .due-form-row { display: flex; gap: 8px; }
+  .due-form input[type="date"], .due-form input[type="time"] {
+    flex: 1; height: 40px; padding: 0 10px;
+    background: #17181A; border: 1px solid #343537; border-radius: 9px;
+    color: #F2F1EC; font-size: 14px; font-family: inherit; outline: none;
+    color-scheme: dark;
+  }
+  .due-form-btns { display: flex; gap: 8px; }
+  .due-form-btns button {
+    flex: 1; height: 38px; border-radius: 9px; border: none;
+    font-size: 13px; font-family: inherit; cursor: pointer; font-weight: 600;
+  }
+  .due-save { background: #E8734A; color: #17181A; }
+  .due-clear { background: #343537; color: #C9C7BF; }
+  .due-cancel { background: none; color: #8B8981; }
   .add-row { display: flex; gap: 8px; margin-top: 18px; align-items: flex-end; }
   .add-input {
     flex: 1; padding: 12px 14px;
@@ -223,6 +263,7 @@ function saveLocalSnapshot(s){
 
 let state = { items: [], completed: [] };
 let editingId = null;
+let dueEditId = null;
 let undoStack = [];
 let showCompleted = true;
 let modalAction = null;
@@ -234,6 +275,8 @@ const ICON_SAVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const ICON_CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 const ICON_RESTORE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>';
+const ICON_DRAG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>';
 
 const DAYS = ['일','월','화','수','목','금','토'];
 function updateClock(){
@@ -247,6 +290,7 @@ function updateClock(){
     `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 (${DAYS[n.getDay()]}) ${ap} ${h}:${mi}:${se}`;
 }
 setInterval(updateClock, 1000);
+setInterval(() => { if(!editingId && !dueEditId) render(); }, 60000);
 updateClock();
 
 function fmtTime(ts){
@@ -319,8 +363,8 @@ function startFirebase(){
       }
       const data = snap.data();
       state = {
-        items: (data.items || []).map(i => ({ id: i.id, text: i.text })),
-        completed: (data.completed || []).map(c => ({ id: c.id, text: c.text, doneAt: c.doneAt }))
+        items: (data.items || []).map(i => { const o = { id: i.id, text: i.text }; if(i.due) o.due = i.due; return o; }),
+        completed: (data.completed || []).map(c => { const o = { id: c.id, text: c.text, doneAt: c.doneAt }; if(c.due) o.due = c.due; return o; })
       };
       loaded = true;
       saveLocalSnapshot(state);
@@ -433,6 +477,14 @@ function renderList(){
       root.appendChild(row);
       setTimeout(() => { input.focus(); autoResize(input); input.setSelectionRange(input.value.length, input.value.length); }, 0);
     } else {
+      row.dataset.itemId = item.id;
+
+      const handle = document.createElement('div');
+      handle.className = 'drag-handle';
+      handle.innerHTML = ICON_DRAG;
+      handle.setAttribute('aria-label', '순서 변경');
+      row.appendChild(handle);
+
       const cb = document.createElement('div');
       cb.className = 'checkbox';
       cb.setAttribute('role', 'button');
@@ -443,7 +495,27 @@ function renderList(){
       const text = document.createElement('span');
       text.className = 'item-text';
       text.textContent = item.text;
-      row.appendChild(text);
+
+      const main = document.createElement('div');
+      main.className = 'item-main';
+      main.appendChild(text);
+
+      if(item.due){
+        const overdue = item.due < Date.now();
+        const badge = document.createElement('div');
+        badge.className = 'due-badge' + (overdue ? ' overdue' : '');
+        badge.innerHTML = ICON_CLOCK + '<span>' + fmtDue(item.due) + '</span>';
+        main.appendChild(badge);
+      }
+      row.appendChild(main);
+
+      const dueBtn = document.createElement('button');
+      const overdueNow = item.due && item.due < Date.now();
+      dueBtn.className = 'icon-btn due' + (item.due ? (overdueNow ? ' overdue' : ' set') : '');
+      dueBtn.innerHTML = ICON_CLOCK;
+      dueBtn.setAttribute('aria-label', '일정 지정');
+      dueBtn.onclick = () => { dueEditId = (dueEditId === item.id ? null : item.id); render(); };
+      row.appendChild(dueBtn);
 
       const editBtn = document.createElement('button');
       editBtn.className = 'icon-btn edit';
@@ -462,7 +534,151 @@ function renderList(){
       row.appendChild(delBtn);
 
       root.appendChild(row);
+      initDrag(handle, row);
+
+      if(dueEditId === item.id){
+        root.appendChild(buildDueForm(item));
+      }
     }
+  });
+}
+
+function fmtDue(ts){
+  const n = new Date(ts);
+  const now = new Date();
+  const sameYear = n.getFullYear() === now.getFullYear();
+  const y = sameYear ? '' : (n.getFullYear() + '.');
+  let h = n.getHours();
+  const ap = h < 12 ? '오전' : '오후';
+  h = h % 12; if(h === 0) h = 12;
+  const mi = String(n.getMinutes()).padStart(2,'0');
+  return `${y}${n.getMonth()+1}.${n.getDate()} ${ap} ${h}:${mi}`;
+}
+
+function buildDueForm(item){
+  const wrap = document.createElement('div');
+  wrap.className = 'due-form';
+  wrap.style.padding = '4px 4px 14px 54px';
+  wrap.style.borderBottom = '1px solid #2A2B2D';
+
+  const row1 = document.createElement('div');
+  row1.className = 'due-form-row';
+
+  const dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  const timeInput = document.createElement('input');
+  timeInput.type = 'time';
+
+  if(item.due){
+    const d = new Date(item.due);
+    dateInput.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    timeInput.value = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  } else {
+    const now = new Date();
+    dateInput.value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    timeInput.value = '09:00';
+  }
+
+  row1.appendChild(dateInput);
+  row1.appendChild(timeInput);
+  wrap.appendChild(row1);
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'due-form-btns';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'due-save';
+  saveBtn.textContent = '저장';
+  saveBtn.onclick = () => {
+    if(!dateInput.value) return;
+    const ts = new Date(dateInput.value + 'T' + (timeInput.value || '00:00')).getTime();
+    mutate(() => { item.due = ts; });
+    dueEditId = null;
+    render();
+  };
+
+  const clearBtn = document.createElement('button');
+  clearBtn.className = 'due-clear';
+  clearBtn.textContent = '일정 없음';
+  clearBtn.onclick = () => {
+    mutate(() => { delete item.due; });
+    dueEditId = null;
+    render();
+  };
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'due-cancel';
+  cancelBtn.textContent = '취소';
+  cancelBtn.onclick = () => { dueEditId = null; render(); };
+
+  btnRow.appendChild(saveBtn);
+  btnRow.appendChild(clearBtn);
+  btnRow.appendChild(cancelBtn);
+  wrap.appendChild(btnRow);
+
+  return wrap;
+}
+
+function initDrag(handle, row){
+  let dragging = false;
+  let listEl = null;
+  let rows = [];
+
+  handle.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    dragging = true;
+    listEl = $('list');
+    rows = Array.from(listEl.querySelectorAll('.item[data-item-id]'));
+    row.classList.add('dragging');
+    handle.setPointerCapture(e.pointerId);
+
+    const onMove = ev => {
+      if(!dragging) return;
+      const y = ev.clientY;
+      rows.forEach(r => {
+        if(r === row) return;
+        r.classList.remove('drag-over-top', 'drag-over-bottom');
+        const rect = r.getBoundingClientRect();
+        if(y > rect.top && y < rect.bottom){
+          if(y < rect.top + rect.height/2) r.classList.add('drag-over-top');
+          else r.classList.add('drag-over-bottom');
+        }
+      });
+    };
+
+    const onUp = ev => {
+      dragging = false;
+      handle.releasePointerCapture(ev.pointerId);
+      row.classList.remove('dragging');
+
+      let targetId = null, before = true;
+      for(const r of rows){
+        if(r.classList.contains('drag-over-top')){ targetId = r.dataset.itemId; before = true; }
+        if(r.classList.contains('drag-over-bottom')){ targetId = r.dataset.itemId; before = false; }
+        r.classList.remove('drag-over-top', 'drag-over-bottom');
+      }
+
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+
+      if(!targetId || targetId === row.dataset.itemId) return;
+      reorder(row.dataset.itemId, targetId, before);
+    };
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  });
+}
+
+function reorder(draggedId, targetId, before){
+  mutate(() => {
+    const fromIdx = state.items.findIndex(i => i.id === draggedId);
+    if(fromIdx === -1) return;
+    const [moved] = state.items.splice(fromIdx, 1);
+    let toIdx = state.items.findIndex(i => i.id === targetId);
+    if(toIdx === -1){ state.items.splice(fromIdx, 0, moved); return; }
+    if(!before) toIdx += 1;
+    state.items.splice(toIdx, 0, moved);
   });
 }
 
@@ -471,7 +687,9 @@ function completeItem(id){
   if(!item) return;
   mutate(() => {
     state.items = state.items.filter(i => i.id !== id);
-    state.completed.push({ id: item.id, text: item.text, doneAt: Date.now() });
+    const rec = { id: item.id, text: item.text, doneAt: Date.now() };
+    if(item.due) rec.due = item.due;
+    state.completed.push(rec);
   });
 }
 
@@ -480,7 +698,9 @@ function restoreItem(id){
   if(!c) return;
   mutate(() => {
     state.completed = state.completed.filter(x => x.id !== id);
-    state.items.push({ id: c.id, text: c.text });
+    const item = { id: c.id, text: c.text };
+    if(c.due) item.due = c.due;
+    state.items.push(item);
   });
 }
 
