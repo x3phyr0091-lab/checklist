@@ -52,10 +52,18 @@
     cursor: pointer;
   }
   .checkbox:active { background: #2A2B2D; }
+  .item-main { flex: 1; min-width: 0; }
   .item-text {
-    flex: 1; font-size: 15px; line-height: 1.4;
+    font-size: 15px; line-height: 1.4;
     color: #F2F1EC; word-break: break-all; white-space: pre-wrap;
   }
+  .due-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; color: #7FA88F; margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .due-badge.overdue { color: #E8734A; }
+  .due-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
   .edit-input {
     flex: 1; padding: 8px 12px;
     background: #222325; border: 1px solid #E8734A; border-radius: 9px;
@@ -81,26 +89,17 @@
   .icon-btn.due.set { color: #7FA88F; }
   .icon-btn.due.overdue { color: #E8734A; }
   .icon-btn.due:active { background: #222325; }
-  .item-main { flex: 1; min-width: 0; }
-  .due-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11.5px; color: #7FA88F; margin-top: 3px;
-    font-variant-numeric: tabular-nums;
-  }
-  .due-badge.overdue { color: #E8734A; }
-  .due-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
-  .due-form {
-    display: flex; flex-direction: column; gap: 10px; margin: 4px 0 2px;
-  }
+  .due-form { display: flex; flex-direction: column; gap: 10px; }
   .due-form-row { display: flex; gap: 8px; }
-  .due-form input[type="date"], .due-form input[type="time"] {
-    flex: 1; height: 40px; padding: 0 10px;
+  .due-form input[type="date"], .due-form input[type="time"],
+  .rt-form input[type="date"], .rt-form input[type="number"], .rt-form select, .rt-form textarea {
     background: #17181A; border: 1px solid #343537; border-radius: 9px;
     color: #F2F1EC; font-size: 14px; font-family: inherit; outline: none;
     color-scheme: dark;
   }
+  .due-form input[type="date"], .due-form input[type="time"] { flex: 1; height: 40px; padding: 0 10px; }
   .due-form-btns { display: flex; gap: 8px; }
-  .due-form-btns button {
+  .due-form-btns button, .rt-form-btns button {
     flex: 1; height: 38px; border-radius: 9px; border: none;
     font-size: 13px; font-family: inherit; cursor: pointer; font-weight: 600;
   }
@@ -115,33 +114,71 @@
     resize: none; line-height: 1.4; min-height: 46px; overflow: hidden;
   }
   .add-input::placeholder { color: #6E6C64; }
+  .add-due-toggle {
+    width: 46px; height: 46px; flex-shrink: 0;
+    background: #222325; border: 1px solid #343537; border-radius: 11px;
+    color: #8B8981; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .add-due-toggle svg { width: 20px; height: 20px; }
+  .add-due-toggle.on { color: #7FA88F; border-color: #4A5F52; }
   .add-btn {
     width: 46px; height: 46px; flex-shrink: 0;
     background: #E8734A; border: none; border-radius: 11px;
     color: #17181A; font-size: 24px; font-weight: 600; cursor: pointer;
   }
   .add-btn:active { background: #d1633d; }
+  .add-due-form {
+    display: none; margin-top: 10px; padding: 12px;
+    background: #1D1E20; border: 1px solid #2A2B2D; border-radius: 11px;
+  }
+  .add-due-form.show { display: block; }
   .empty { text-align: center; color: #6E6C64; font-size: 14px; padding: 30px 0; }
   .status { font-size: 12px; margin-top: 10px; min-height: 14px; }
   .status.sync { color: #6E6C64; }
   .status.err { color: #E8734A; }
-  .comp-header {
+  .sec-header {
     display: flex; align-items: center; justify-content: space-between;
     margin-top: 26px; padding-top: 16px; border-top: 1px solid #2A2B2D;
   }
-  .comp-title {
+  .sec-title {
     display: flex; align-items: center; gap: 7px;
     font-size: 14px; color: #C9C7BF; cursor: pointer;
     background: none; border: none; font-family: inherit; padding: 4px 0;
   }
-  .comp-title .chev { width: 15px; height: 15px; transition: transform .2s; color: #8B8981; }
-  .comp-title .chev.collapsed { transform: rotate(-90deg); }
-  .comp-count { color: #6E6C64; }
-  .clear-btn {
+  .sec-title .chev { width: 15px; height: 15px; transition: transform .2s; color: #8B8981; }
+  .sec-title .chev.collapsed { transform: rotate(-90deg); }
+  .sec-count { color: #6E6C64; }
+  .sec-action {
     background: none; border: none; color: #8B8981;
     font-size: 13px; font-family: inherit; cursor: pointer; padding: 4px 6px;
   }
-  .clear-btn:active { color: #E8734A; }
+  .sec-action:active { color: #E8734A; }
+  .rt-item { display: flex; align-items: center; gap: 10px; padding: 12px 4px; border-bottom: 1px solid #232427; }
+  .rt-main { flex: 1; min-width: 0; }
+  .rt-text { font-size: 15px; line-height: 1.4; color: #F2F1EC; word-break: break-all; white-space: pre-wrap; }
+  .rt-meta {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; color: #9A9890; margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .rt-meta.overdue { color: #E8734A; }
+  .rt-meta svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .rt-form {
+    padding: 12px; margin: 8px 0;
+    background: #1D1E20; border: 1px solid #2A2B2D; border-radius: 11px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .rt-form textarea {
+    width: 100%; padding: 10px 12px; resize: none; line-height: 1.4;
+    min-height: 42px; overflow: hidden; font-size: 15px;
+  }
+  .rt-form-row { display: flex; gap: 8px; align-items: center; }
+  .rt-form input[type="number"] { width: 70px; height: 40px; padding: 0 10px; text-align: center; }
+  .rt-form select { flex: 1; height: 40px; padding: 0 10px; }
+  .rt-form input[type="date"] { flex: 1.4; height: 40px; padding: 0 10px; }
+  .rt-form-label { font-size: 12px; color: #8B8981; }
+  .rt-form-btns { display: flex; gap: 8px; }
   .comp-item { display: flex; align-items: center; gap: 10px; padding: 10px 4px; }
   .comp-check { width: 19px; height: 19px; color: #6E7A70; flex-shrink: 0; }
   .comp-text { flex: 1; font-size: 14px; color: #8B8981; text-decoration: line-through; word-break: break-all; line-height: 1.4; white-space: pre-wrap; }
@@ -199,10 +236,24 @@
 
   <div class="add-row">
     <textarea class="add-input" id="new-input" rows="1" placeholder="항목 추가"></textarea>
+    <button class="add-due-toggle" id="add-due-toggle" aria-label="일정 추가">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+    </button>
     <button class="add-btn" id="add-btn">+</button>
   </div>
 
+  <div class="add-due-form" id="add-due-form">
+    <div class="due-form">
+      <div class="due-form-row">
+        <input type="date" id="add-date">
+        <input type="time" id="add-time" value="09:00">
+      </div>
+    </div>
+  </div>
+
   <div class="status sync" id="status"></div>
+
+  <div id="routine-section"></div>
 
   <div id="completed-section"></div>
 
@@ -211,7 +262,7 @@
 
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <p class="modal-q" id="modal-q">완료 기록을 모두 지울까요?</p>
+    <p class="modal-q" id="modal-q"></p>
     <p class="modal-item" id="modal-item"></p>
     <div class="modal-btns">
       <button class="btn-cancel" id="modal-cancel">취소</button>
@@ -253,6 +304,8 @@ function loadLocalSnapshot(){
     if(!raw) return null;
     const parsed = JSON.parse(raw);
     if(!parsed || !Array.isArray(parsed.items)) return null;
+    if(!Array.isArray(parsed.completed)) parsed.completed = [];
+    if(!Array.isArray(parsed.routines)) parsed.routines = [];
     return parsed;
   } catch(e){ return null; }
 }
@@ -261,13 +314,15 @@ function saveLocalSnapshot(s){
   try { localStorage.setItem(LOCAL_KEY, JSON.stringify(s)); } catch(e){}
 }
 
-let state = { items: [], completed: [] };
+let state = { items: [], completed: [], routines: [] };
 let editingId = null;
 let dueEditId = null;
+let routineForm = null;   // 'new' 또는 routine id
 let undoStack = [];
 let showCompleted = true;
+let showRoutines = true;
 let modalAction = null;
-let loaded = false;   // 서버에서 최소 1회 데이터를 받기 전엔 저장 금지 (데이터 보호)
+let loaded = false;
 
 const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
@@ -277,29 +332,57 @@ const ICON_CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const ICON_RESTORE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>';
 const ICON_DRAG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
 const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>';
+const ICON_REPEAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>';
 
 const DAYS = ['일','월','화','수','목','금','토'];
+const UNIT_LABEL = { day: '일', week: '주', month: '개월' };
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
 function updateClock(){
   const n = new Date();
-  let h = n.getHours();
-  const ap = h < 12 ? '오전' : '오후';
-  h = h % 12; if(h === 0) h = 12;
-  const mi = String(n.getMinutes()).padStart(2,'0');
-  const se = String(n.getSeconds()).padStart(2,'0');
   $('date-label').textContent =
-    `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 (${DAYS[n.getDay()]}) ${ap} ${h}:${mi}:${se}`;
+    `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 (${DAYS[n.getDay()]}) ${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
 }
 setInterval(updateClock, 1000);
-setInterval(() => { if(!editingId && !dueEditId) render(); }, 60000);
+setInterval(() => { if(!editingId && !dueEditId && !routineForm) render(); }, 60000);
 updateClock();
 
 function fmtTime(ts){
   const n = new Date(ts);
-  let h = n.getHours();
-  const ap = h < 12 ? '오전' : '오후';
-  h = h % 12; if(h === 0) h = 12;
-  const mi = String(n.getMinutes()).padStart(2,'0');
-  return `${n.getMonth()+1}/${n.getDate()} ${ap} ${h}:${mi}`;
+  return `${n.getMonth()+1}/${n.getDate()} ${pad(n.getHours())}:${pad(n.getMinutes())}`;
+}
+
+function fmtDue(ts){
+  const n = new Date(ts);
+  const now = new Date();
+  const y = n.getFullYear() === now.getFullYear() ? '' : (n.getFullYear() + '.');
+  return `${y}${n.getMonth()+1}.${n.getDate()} ${pad(n.getHours())}:${pad(n.getMinutes())}`;
+}
+
+function fmtDateOnly(ts){
+  const n = new Date(ts);
+  const now = new Date();
+  const y = n.getFullYear() === now.getFullYear() ? '' : (n.getFullYear() + '.');
+  return `${y}${n.getMonth()+1}.${n.getDate()}`;
+}
+
+function todayStart(){
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+}
+
+function addInterval(baseTs, n, unit){
+  const d = new Date(baseTs);
+  if(unit === 'day') d.setDate(d.getDate() + n);
+  else if(unit === 'week') d.setDate(d.getDate() + n*7);
+  else d.setMonth(d.getMonth() + n);
+  return d.getTime();
+}
+
+function dateInputValue(ts){
+  const d = new Date(ts);
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
 }
 
 function setStatus(text, isErr){
@@ -317,14 +400,12 @@ if(!firebaseConfig.apiKey || !firebaseConfig.projectId){
   $('config-banner').style.display = 'block';
   renderLocal();
 } else {
-  // 1) 저장해둔 마지막 상태를 즉시 그려서 체감 속도 확보
   const snapshot = loadLocalSnapshot();
   if(snapshot){
     state = snapshot;
     setStatus('불러온 기록 표시 중…');
     render();
   }
-  // 2) 그 사이 실제 서버와 연결해 최신화
   startFirebase();
 }
 
@@ -349,27 +430,26 @@ function startFirebase(){
 
   setStatus('연결 중…');
 
-  // 인증이 끝난 뒤에 구독 (서버 접근 권한 확보 후)
   onAuthStateChanged(auth, user => {
     if(!user) return;
 
     onSnapshot(docRef, snap => {
       if(!snap.exists()){
-        // 서버에서 확인된 경우에만(캐시가 아닌) 최초 문서 생성
         if(!snap.metadata.fromCache){
-          setDoc(docRef, { items: DEFAULT_ITEMS, completed: [] });
+          setDoc(docRef, { items: DEFAULT_ITEMS, completed: [], routines: [] });
         }
         return;
       }
       const data = snap.data();
       state = {
         items: (data.items || []).map(i => { const o = { id: i.id, text: i.text }; if(i.due) o.due = i.due; return o; }),
-        completed: (data.completed || []).map(c => { const o = { id: c.id, text: c.text, doneAt: c.doneAt }; if(c.due) o.due = c.due; return o; })
+        completed: (data.completed || []).map(c => { const o = { id: c.id, text: c.text, doneAt: c.doneAt }; if(c.due) o.due = c.due; if(c.routine) o.routine = true; return o; }),
+        routines: (data.routines || []).map(r => ({ id: r.id, text: r.text, intervalN: r.intervalN, intervalUnit: r.intervalUnit, nextDue: r.nextDue }))
       };
       loaded = true;
       saveLocalSnapshot(state);
       setStatus(snap.metadata.fromCache ? '캐시에서 불러옴' : '동기화됨');
-      if(!editingId) render();
+      if(!editingId && !dueEditId && !routineForm) render();
     }, err => {
       setStatus('동기화 오류: ' + err.message, true);
     });
@@ -380,9 +460,9 @@ function startFirebase(){
   });
 
   window.__save = async () => {
-    if(!loaded) return;   // 로드 전엔 저장 안 함 → 빈 데이터로 덮어쓰는 사고 방지
+    if(!loaded) return;
     try {
-      await setDoc(docRef, { items: state.items, completed: state.completed });
+      await setDoc(docRef, { items: state.items, completed: state.completed, routines: state.routines });
     } catch(e){
       setStatus('저장 실패: ' + e.message, true);
     }
@@ -390,14 +470,14 @@ function startFirebase(){
 }
 
 function renderLocal(){
-  state = { items: DEFAULT_ITEMS.map(i => ({...i})), completed: [] };
+  state = { items: DEFAULT_ITEMS.map(i => ({...i})), completed: [], routines: [] };
   loaded = true;
   window.__save = async () => {};
   render();
 }
 
 function mutate(fn){
-  if(!loaded) return;   // 로드 전 조작 차단 (데이터 보호)
+  if(!loaded) return;
   undoStack.push(JSON.stringify(state));
   if(undoStack.length > 50) undoStack.shift();
   fn();
@@ -410,6 +490,8 @@ function undo(){
   if(!undoStack.length) return;
   state = JSON.parse(undoStack.pop());
   editingId = null;
+  dueEditId = null;
+  routineForm = null;
   saveLocalSnapshot(state);
   window.__save();
   render();
@@ -417,9 +499,12 @@ function undo(){
 
 function render(){
   renderList();
+  renderRoutines();
   renderCompleted();
   $('undo-btn').disabled = undoStack.length === 0;
 }
+
+/* ============ 진행 목록 ============ */
 
 function renderList(){
   const root = $('list');
@@ -543,18 +628,6 @@ function renderList(){
   });
 }
 
-function fmtDue(ts){
-  const n = new Date(ts);
-  const now = new Date();
-  const sameYear = n.getFullYear() === now.getFullYear();
-  const y = sameYear ? '' : (n.getFullYear() + '.');
-  let h = n.getHours();
-  const ap = h < 12 ? '오전' : '오후';
-  h = h % 12; if(h === 0) h = 12;
-  const mi = String(n.getMinutes()).padStart(2,'0');
-  return `${y}${n.getMonth()+1}.${n.getDate()} ${ap} ${h}:${mi}`;
-}
-
 function buildDueForm(item){
   const wrap = document.createElement('div');
   wrap.className = 'due-form';
@@ -571,11 +644,10 @@ function buildDueForm(item){
 
   if(item.due){
     const d = new Date(item.due);
-    dateInput.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    timeInput.value = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    dateInput.value = dateInputValue(item.due);
+    timeInput.value = pad(d.getHours()) + ':' + pad(d.getMinutes());
   } else {
-    const now = new Date();
-    dateInput.value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    dateInput.value = dateInputValue(Date.now());
     timeInput.value = '09:00';
   }
 
@@ -619,16 +691,16 @@ function buildDueForm(item){
   return wrap;
 }
 
+/* ============ 드래그 정렬 ============ */
+
 function initDrag(handle, row){
   let dragging = false;
-  let listEl = null;
   let rows = [];
 
   handle.addEventListener('pointerdown', e => {
     e.preventDefault();
     dragging = true;
-    listEl = $('list');
-    rows = Array.from(listEl.querySelectorAll('.item[data-item-id]'));
+    rows = Array.from($('list').querySelectorAll('.item[data-item-id]'));
     row.classList.add('dragging');
     handle.setPointerCapture(e.pointerId);
 
@@ -682,6 +754,8 @@ function reorder(draggedId, targetId, before){
   });
 }
 
+/* ============ 완료 처리 ============ */
+
 function completeItem(id){
   const item = state.items.find(i => i.id === id);
   if(!item) return;
@@ -704,24 +778,234 @@ function restoreItem(id){
   });
 }
 
+/* ============ 반복 작업 ============ */
+
+function completeRoutine(id){
+  const r = state.routines.find(x => x.id === id);
+  if(!r) return;
+  mutate(() => {
+    state.completed.push({ id: 'rc_' + Date.now(), text: r.text, doneAt: Date.now(), routine: true });
+    r.nextDue = addInterval(todayStart(), r.intervalN, r.intervalUnit);
+  });
+}
+
+function renderRoutines(){
+  const sec = $('routine-section');
+  sec.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'sec-header';
+
+  const titleBtn = document.createElement('button');
+  titleBtn.className = 'sec-title';
+  titleBtn.innerHTML =
+    '<span class="chev' + (showRoutines ? '' : ' collapsed') + '">' + ICON_CHEV + '</span>' +
+    '반복 작업 <span class="sec-count">' + state.routines.length + '</span>';
+  titleBtn.onclick = () => { showRoutines = !showRoutines; render(); };
+  header.appendChild(titleBtn);
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'sec-action';
+  addBtn.textContent = '+ 추가';
+  addBtn.onclick = () => { routineForm = 'new'; showRoutines = true; render(); };
+  header.appendChild(addBtn);
+
+  sec.appendChild(header);
+
+  if(!showRoutines) return;
+
+  if(routineForm === 'new'){
+    sec.appendChild(buildRoutineForm(null));
+  }
+
+  if(state.routines.length === 0 && routineForm !== 'new'){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.style.padding = '18px 0';
+    empty.textContent = '몇 주 · 몇 개월 주기로 반복되는 일을 등록해봐.';
+    sec.appendChild(empty);
+    return;
+  }
+
+  const sorted = [...state.routines].sort((a,b) => a.nextDue - b.nextDue);
+  sorted.forEach(r => {
+    if(routineForm === r.id){
+      sec.appendChild(buildRoutineForm(r));
+      return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'rt-item';
+
+    const cb = document.createElement('div');
+    cb.className = 'checkbox';
+    cb.setAttribute('role', 'button');
+    cb.setAttribute('aria-label', '완료 (다음 주기로)');
+    cb.onclick = () => completeRoutine(r.id);
+    row.appendChild(cb);
+
+    const main = document.createElement('div');
+    main.className = 'rt-main';
+
+    const text = document.createElement('div');
+    text.className = 'rt-text';
+    text.textContent = r.text;
+    main.appendChild(text);
+
+    const dayDiff = Math.round((r.nextDue - todayStart()) / 86400000);
+    const overdue = dayDiff <= 0;
+    let dText;
+    if(dayDiff > 0) dText = 'D-' + dayDiff;
+    else if(dayDiff === 0) dText = '오늘';
+    else dText = (-dayDiff) + '일 지남';
+
+    const meta = document.createElement('div');
+    meta.className = 'rt-meta' + (overdue ? ' overdue' : '');
+    meta.innerHTML = ICON_REPEAT + '<span>' + r.intervalN + UNIT_LABEL[r.intervalUnit] + '마다 · ' + fmtDateOnly(r.nextDue) + ' (' + dText + ')</span>';
+    main.appendChild(meta);
+
+    row.appendChild(main);
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'icon-btn edit';
+    editBtn.innerHTML = ICON_EDIT;
+    editBtn.setAttribute('aria-label', '수정');
+    editBtn.onclick = () => { routineForm = r.id; render(); };
+    row.appendChild(editBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'icon-btn del';
+    delBtn.innerHTML = ICON_X;
+    delBtn.setAttribute('aria-label', '삭제');
+    delBtn.onclick = () => mutate(() => {
+      state.routines = state.routines.filter(x => x.id !== r.id);
+    });
+    row.appendChild(delBtn);
+
+    sec.appendChild(row);
+  });
+}
+
+function buildRoutineForm(routine){
+  const wrap = document.createElement('div');
+  wrap.className = 'rt-form';
+
+  const textInput = document.createElement('textarea');
+  textInput.rows = 1;
+  textInput.placeholder = '반복할 일 (예: 로봇청소기 통비우기)';
+  if(routine) textInput.value = routine.text;
+  textInput.oninput = () => autoResize(textInput);
+  wrap.appendChild(textInput);
+
+  const row1 = document.createElement('div');
+  row1.className = 'rt-form-row';
+
+  const label1 = document.createElement('span');
+  label1.className = 'rt-form-label';
+  label1.textContent = '주기';
+  row1.appendChild(label1);
+
+  const nInput = document.createElement('input');
+  nInput.type = 'number';
+  nInput.min = '1';
+  nInput.value = routine ? routine.intervalN : 1;
+  row1.appendChild(nInput);
+
+  const unitSel = document.createElement('select');
+  [['day','일'],['week','주'],['month','개월']].forEach(([v,l]) => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = l;
+    unitSel.appendChild(opt);
+  });
+  unitSel.value = routine ? routine.intervalUnit : 'month';
+  row1.appendChild(unitSel);
+  wrap.appendChild(row1);
+
+  const row2 = document.createElement('div');
+  row2.className = 'rt-form-row';
+
+  const label2 = document.createElement('span');
+  label2.className = 'rt-form-label';
+  label2.textContent = '다음 예정일';
+  row2.appendChild(label2);
+
+  const dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  let dateTouched = !!routine;
+
+  const calcDefault = () => {
+    const n = parseInt(nInput.value, 10) || 1;
+    return dateInputValue(addInterval(todayStart(), n, unitSel.value));
+  };
+  dateInput.value = routine ? dateInputValue(routine.nextDue) : calcDefault();
+  dateInput.onchange = () => { dateTouched = true; };
+  nInput.oninput = () => { if(!dateTouched) dateInput.value = calcDefault(); };
+  unitSel.onchange = () => { if(!dateTouched) dateInput.value = calcDefault(); };
+
+  row2.appendChild(dateInput);
+  wrap.appendChild(row2);
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'rt-form-btns';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'due-save';
+  saveBtn.textContent = routine ? '저장' : '추가';
+  saveBtn.onclick = () => {
+    const text = textInput.value.trim();
+    const n = parseInt(nInput.value, 10);
+    if(!text || !n || n < 1 || !dateInput.value) return;
+    const nextDue = new Date(dateInput.value + 'T00:00').getTime();
+    if(routine){
+      mutate(() => {
+        routine.text = text;
+        routine.intervalN = n;
+        routine.intervalUnit = unitSel.value;
+        routine.nextDue = nextDue;
+      });
+    } else {
+      mutate(() => {
+        state.routines.push({ id: 'rt_' + Date.now(), text, intervalN: n, intervalUnit: unitSel.value, nextDue });
+      });
+    }
+    routineForm = null;
+    render();
+  };
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'due-cancel';
+  cancelBtn.textContent = '취소';
+  cancelBtn.onclick = () => { routineForm = null; render(); };
+
+  btnRow.appendChild(saveBtn);
+  btnRow.appendChild(cancelBtn);
+  wrap.appendChild(btnRow);
+
+  setTimeout(() => { if(!routine) textInput.focus(); autoResize(textInput); }, 0);
+
+  return wrap;
+}
+
+/* ============ 완료 기록 ============ */
+
 function renderCompleted(){
   const sec = $('completed-section');
   sec.innerHTML = '';
   if(state.completed.length === 0) return;
 
   const header = document.createElement('div');
-  header.className = 'comp-header';
+  header.className = 'sec-header';
 
   const titleBtn = document.createElement('button');
-  titleBtn.className = 'comp-title';
+  titleBtn.className = 'sec-title';
   titleBtn.innerHTML =
     '<span class="chev' + (showCompleted ? '' : ' collapsed') + '">' + ICON_CHEV + '</span>' +
-    '완료 기록 <span class="comp-count">' + state.completed.length + '</span>';
+    '완료 기록 <span class="sec-count">' + state.completed.length + '</span>';
   titleBtn.onclick = () => { showCompleted = !showCompleted; render(); };
   header.appendChild(titleBtn);
 
   const clearBtn = document.createElement('button');
-  clearBtn.className = 'clear-btn';
+  clearBtn.className = 'sec-action';
   clearBtn.textContent = '모두 지우기';
   clearBtn.onclick = openClearModal;
   header.appendChild(clearBtn);
@@ -750,12 +1034,14 @@ function renderCompleted(){
     time.textContent = c.doneAt ? fmtTime(c.doneAt) : '';
     row.appendChild(time);
 
-    const restore = document.createElement('button');
-    restore.className = 'icon-btn restore';
-    restore.innerHTML = ICON_RESTORE;
-    restore.setAttribute('aria-label', '복구');
-    restore.onclick = () => restoreItem(c.id);
-    row.appendChild(restore);
+    if(!c.routine){
+      const restore = document.createElement('button');
+      restore.className = 'icon-btn restore';
+      restore.innerHTML = ICON_RESTORE;
+      restore.setAttribute('aria-label', '복구');
+      restore.onclick = () => restoreItem(c.id);
+      row.appendChild(restore);
+    }
 
     const del = document.createElement('button');
     del.className = 'icon-btn del';
@@ -769,6 +1055,8 @@ function renderCompleted(){
     sec.appendChild(row);
   });
 }
+
+/* ============ 모달 ============ */
 
 function openClearModal(){
   modalAction = 'clearCompleted';
@@ -790,13 +1078,37 @@ $('modal').onclick = e => { if(e.target === $('modal')) closeModal(); };
 
 $('undo-btn').onclick = undo;
 
+/* ============ 항목 추가 ============ */
+
+let addDueOpen = false;
+
+$('add-due-toggle').onclick = () => {
+  addDueOpen = !addDueOpen;
+  $('add-due-form').classList.toggle('show', addDueOpen);
+  $('add-due-toggle').classList.toggle('on', addDueOpen);
+  if(addDueOpen && !$('add-date').value){
+    $('add-date').value = dateInputValue(Date.now());
+  }
+};
+
 function addItem(){
   const inp = $('new-input');
   const v = inp.value.trim();
   if(!v) return;
-  mutate(() => { state.items.push({ id: 'item_' + Date.now(), text: v }); });
+  const item = { id: 'item_' + Date.now(), text: v };
+  if(addDueOpen && $('add-date').value){
+    item.due = new Date($('add-date').value + 'T' + ($('add-time').value || '00:00')).getTime();
+  }
+  mutate(() => { state.items.push(item); });
   inp.value = '';
   autoResize(inp);
+  if(addDueOpen){
+    addDueOpen = false;
+    $('add-due-form').classList.remove('show');
+    $('add-due-toggle').classList.remove('on');
+    $('add-date').value = '';
+    $('add-time').value = '09:00';
+  }
 }
 $('add-btn').onclick = addItem;
 $('new-input').onkeydown = e => {
